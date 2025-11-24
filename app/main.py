@@ -6,12 +6,23 @@ from pathlib import Path
 from typing import Any, Dict
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import routes
 from app.llm_client import call_hf_inference, is_hf_configured
 from app.prompt_templates import PROMPT
 from app.schemas import CodeDiff, CodeFixRequest, CodeFixResponse
 from app.utils import extract_json, run_checks, run_shell, validate_patch_text
+
+app = FastAPI(title="AI Code-Fix Agent")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # later you can restrict this to your frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 logger = logging.getLogger("uvicorn.error")
 app = FastAPI(title="AI Code-Fix Agent")
