@@ -1,0 +1,85 @@
+stages:
+  - lint
+  - test
+  - build
+  - post_fix
+
+variables:
+  DOCKER_IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+
+lint:
+  stage: lint
+  image: python:3.11stages:
+  - lint
+  - test
+  - build
+
+variables:
+  IMAGE_TAG: "$CI_PROJECT_PATH:$CI_COMMIT_SHORT_SHA"
+
+lint:
+  image: python:3.11-slim
+  stage: lint
+  script:
+    - pip install -r requirements.txt
+    - pip install flake8 black
+    - flake8 app
+    - black --check .
+
+test:
+  image: python:3.11-slim
+  stage: test
+  services: []
+  script:
+    - pip install -r requirements.txt
+    - pip install pytest requests
+    - pytest -q
+
+docker-build:
+  image: docker:stable
+  stage: build
+  services:
+    - docker:dind
+  variables:
+    DOCKER_DRIVER: overlay2
+  script:
+    - docker build -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA" .
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+  only:
+    - main
+
+  script:
+    - pip install -r requirements.txt
+    - flake8 app || true   # make lint not fail pipeline for first run
+
+test:
+  stage: test
+  image: python:3.11
+  script:
+    - pip install -r requirements.txt
+    - pytest -q
+
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker build -t $DOCKER_IMAGE .
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker push $DOCKER_IMAGE
+
+post_fix:
+  stage: post_fix
+  image: python:3.11
+  script:
+    - echo "Simulate running static analysis and posting fixes..."
+    # Example: call your running container or invoke a script to apply patch via GitLab API
+  only:
+    - merge_requests
+sast:
+  image: python:3.11-slim
+  stage: test
+  script:
+    - pip install bandit
+    - bandit -r app -x tests

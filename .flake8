@@ -1,0 +1,15 @@
+[flake8]
+max-line-length = 88
+
+exclude =
+    .venv,
+    venv,
+    env,
+    __pycache__,
+    .git,
+    .mypy_cache,
+    .pytest_cache
+
+# If some specific file ever needs custom ignores, add here, e.g.:
+# per-file-ignores =
+#     send_patch.py:F401
