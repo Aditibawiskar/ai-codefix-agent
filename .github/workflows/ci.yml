@@ -25,6 +25,9 @@ jobs:
       - name: Run black (check)
         run: python -m black --check .
 
+      - name: Run isort
+        run: python -m isort --check-only .
+
       - name: Run flake8
         run: python -m flake8 .
 
