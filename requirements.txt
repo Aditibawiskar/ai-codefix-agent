@@ -3,7 +3,7 @@ uvicorn[standard]
 httpx
 python-dotenv
 pytest
-black
 flake8
 isort
 pre-commit
+black
